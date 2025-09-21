@@ -8,6 +8,7 @@ from JWT import ALGORITHM, SECRET_KEY
 from jwt.exceptions import InvalidTokenError
 from hashing import Hash
 from jwt import ExpiredSignatureError
+from emailSender import send_reset_email
 
 
 
@@ -16,10 +17,10 @@ router = APIRouter(
 )
 
 
-def send_reset_email_dev(email:str, link: str):
-    print(f"password reset link for {email}: {link}")
+# def send_reset_email_dev(email:str, link: str):
+#     print(f"password reset link for {email}: {link}")
     
-
+        
 @router.post('/forgot_password', status_code=status.HTTP_201_CREATED, response_model=schemas.Message)
 def forget_password(request: schemas.ForgetPasswordIn, 
                     background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
@@ -34,7 +35,7 @@ def forget_password(request: schemas.ForgetPasswordIn,
     
     reset_link = f"http://localhost:8000/reset-password?token={token}"
     
-    background_tasks.add_task(send_reset_email_dev, email, reset_link)
+    background_tasks.add_task(send_reset_email, email, reset_link)
     
     return {"message": 'reset link has been sent'}
 
@@ -48,7 +49,7 @@ def reset_password(request: schemas.ResetPasswordIn, db: Session = Depends(get_d
             raise HTTPException(status_code=400, detail="Invalid reset token")
         email = claims.get("sub")
         if not email:
-            raise HTTPException(status_code=400, detail="Invalid reset token")
+            raise HTTPException(status_code=400, detail="email is not exist")
     except ExpiredSignatureError:
         raise HTTPException(status_code=400, detail="Reset token has expired")
     except InvalidTokenError:
