@@ -21,7 +21,14 @@ def send_reset_email(email: str, link: str):
     msg.set_content(f"Click this link to reset your password:\n\n{link}\n\nIf you didn't request this, ignore this email.")
 
     context = ssl.create_default_context()
-    with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, context=context) as server:
+    # with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, context=context) as server:
+    #     server.login(SMTP_USER, SMTP_PASS)
+    #     server.send_message(msg)
+    
+    server = smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, context=context)
+    try:
         server.login(SMTP_USER, SMTP_PASS)
         server.send_message(msg)
+    finally:
+        server.quit()
 

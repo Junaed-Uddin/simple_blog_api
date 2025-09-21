@@ -50,6 +50,7 @@ class Message(BaseModel):
 class PostCreate(BaseModel):
     title: str
     body: str
+    
 
 class PostOut(BaseModel):
     id: int
@@ -59,3 +60,17 @@ class PostOut(BaseModel):
     author_id: int
 
     model_config =  {"from_attributes": True}
+    
+
+# Comment 
+class CommentCreate(BaseModel):
+    body: str
+
+class CommentOut(BaseModel):
+    id: int
+    body: str
+    create_at: datetime
+    author_id: int
+    post_id: int
+    
+    model_config = {"from_attributes": True}
