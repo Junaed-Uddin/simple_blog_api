@@ -44,13 +44,14 @@ def comment_update(id: int, request: schemas.CommentCreate, db: Session = Depend
                    currentUser: models.User = Depends(get_current_user)):
     comment = db.query(models.Post).filter(models.Post.id == id).first()
     loggedInUser = db.query(models.Comment).filter(models.Comment.author_id == currentUser.id).first()
-    print("login user:", loggedInUser.id)
+    print("login user ID:", loggedInUser.author_id)
+    print("AUTHOR ID:", comment.author_id)
     
     if not comment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                             detail= f'Not found any comment')
     
-    if loggedInUser.id != currentUser.id:
+    if loggedInUser.author_id != comment.author_id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                             detail= f'Not valid for this user')
         
