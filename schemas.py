@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from pydantic import BaseModel, EmailStr
 
+
 class UserCreate(BaseModel):
     username: str
     email: EmailStr
@@ -74,3 +75,19 @@ class CommentOut(BaseModel):
     post_id: int
     
     model_config = {"from_attributes": True}
+
+
+# Like 
+class LikeIn(BaseModel):
+    like: bool 
+    
+      
+class LikeOut(BaseModel):
+    id: int
+    like: bool 
+    author_id: int
+    post_id: int
+    create_at: datetime
+    
+    model_config = {"from_attributes": True}
+

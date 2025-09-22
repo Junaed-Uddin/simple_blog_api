@@ -29,7 +29,7 @@ def comment_create(id: int, request: schemas.CommentCreate, db: Session = Depend
 
 
 @router.get('/', status_code=status.HTTP_200_OK)
-def show_comment(db: Session = Depends(get_db)):
+def show_all(db: Session = Depends(get_db), currentUser: models.User = Depends(get_current_user)):
     return db.query(models.Comment).all()
 
 
@@ -42,22 +42,61 @@ def my_comments(db: Session = Depends(get_db), currentUser: models.User = Depend
 @router.put('/{id}', status_code=status.HTTP_202_ACCEPTED)
 def comment_update(id: int, request: schemas.CommentCreate, db: Session = Depends(get_db),
                    currentUser: models.User = Depends(get_current_user)):
-    comment = db.query(models.Post).filter(models.Post.id == id).first()
-    loggedInUser = db.query(models.Comment).filter(models.Comment.author_id == currentUser.id).first()
-    print("login user ID:", loggedInUser.author_id)
-    print("AUTHOR ID:", comment.author_id)
+    comment = db.query(models.Comment).filter(models.Comment.id == id).first()
+    owner = db.query(models.Comment).filter(models.Comment.author_id == currentUser.id).first()
+
     
     if not comment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
-                            detail= f'Not found any comment')
+                            detail= 'Not found any comment')
     
-    if loggedInUser.author_id != comment.author_id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+    if owner.author_id != comment.author_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
                             detail= f'Not valid for this user')
         
-    update_comment = db.query(models.Comment).filter(models.Comment.id == id).update(request.model_dump(exclude_unset=True), synchronize_session=False)
+    data = request.model_dump(exclude_unset=True)
+    for i, j in data.items():
+        setattr(comment, i, j)
+        
     db.commit()
-    return update_comment
+    db.refresh(comment)
+    return comment
+
+
+@router.get('/{id}', status_code=status.HTTP_202_ACCEPTED)
+def single_show(id: int, db: Session = Depends(get_db), 
+                currentUser: models.User = Depends(get_current_user)):
+    single_comment = db.query(models.Post).filter(models.Post.id == id).first()
+
+    if not single_comment:
+         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+                            detail= f'comment {id} is not found')
+         
+    return single_comment
+
+
+
+@router.delete('/{id}', status_code=status.HTTP_204_NO_CONTENT)
+def comment_delete(id: int, db: Session = Depends(get_db), 
+                   currentUser: models.User = Depends(get_current_user)):
+    comment = db.query(models.Comment).filter(models.Comment.id == id).first()
     
+    if not comment: 
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+                            detail= f'comment {id} is not found')
+        
+    owner = db.query(models.Comment).filter(models.Comment.author_id == currentUser.id).first()
+    
+
+    if comment.author_id != owner.author_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
+                            detail= f'Not validate for this user {id}')
+
+    db.query(models.Comment).filter(models.Comment.id == id).delete(synchronize_session=False)
+    db.commit()
+    return {'message': f'successfully deleted with the id: {id}'}
+    
+    
+
     
     

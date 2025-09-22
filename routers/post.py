@@ -22,7 +22,7 @@ def create_post(request: schemas.PostCreate, db: Session = Depends(get_db), curr
     return new_post
 
 
-@router.get('/all')
+@router.get('/all', status_code=status.HTTP_200_OK)
 def all_user_posts(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     return db.query(models.Post).all()
 
@@ -32,18 +32,8 @@ def single_user_posts(db: Session = Depends(get_db), current_user: models.User =
     return db.query(models.Post).filter(models.Post.author_id == current_user.id).all()
 
 
-@router.get('/mine/{id}')
-def single_user_post(id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    post = db.query(models.Post).filter(models.Post.id == id, 
-                                        models.Post.author_id == current_user.id).first()
-    if not post:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
-                            detail=f'the post with id:{id} is not found')
-    return post
-
-
 @router.get('/{id}', status_code=status.HTTP_200_OK)
-def single_show(id: int, db: Session = Depends(get_db)):
+def single_show(id: int, db: Session = Depends(get_db), currentUser: models.User = Depends(get_current_user)):
     post = db.query(models.Post).filter(models.Post.id == id).first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
@@ -52,7 +42,7 @@ def single_show(id: int, db: Session = Depends(get_db)):
 
 
 @router.put('/{id}', status_code=status.HTTP_202_ACCEPTED)
-def post_update(id: int, request: schemas.PostCreate, db: Session = Depends(get_db)):
+def post_update(id: int, request: schemas.PostCreate, db: Session = Depends(get_db), currentUser: models.User = Depends(get_current_user)):
     post = db.query(models.Post).filter(models.Post.id == id).update(request.model_dump(exclude_unset=True), 
                                                                      synchronize_session=False)
     if not post:
@@ -65,7 +55,7 @@ def post_update(id: int, request: schemas.PostCreate, db: Session = Depends(get_
 
 
 @router.delete('/{id}', status_code=status.HTTP_204_NO_CONTENT)
-def post_delete(id: int, db: Session = Depends(get_db)):
+def post_delete(id: int, db: Session = Depends(get_db), currentUser: models.User = Depends(get_current_user)):
     post = db.query(models.Post).filter(models.Post.id == id).delete(synchronize_session=False)
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
