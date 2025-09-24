@@ -3,6 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, EmailStr
 
 
+# User 
 class UserCreate(BaseModel):
     username: str
     email: EmailStr
@@ -21,8 +22,15 @@ class UserOut(BaseModel):
     create_at: datetime
     
     model_config = {"from_attributes": True}
-
     
+    
+class UserMini(BaseModel):
+    username: str
+    email: EmailStr
+    
+    model_config = {"from_attributes": True}
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -91,3 +99,17 @@ class LikeOut(BaseModel):
     
     model_config = {"from_attributes": True}
 
+
+class PostWithDetails(PostOut):
+    user: UserMini
+    comments: list[CommentOut] = []
+    likes: list[LikeOut] = []
+    
+    model_config = {"from_attributes": True}
+    
+
+    
+
+
+
+ 

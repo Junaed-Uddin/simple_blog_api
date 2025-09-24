@@ -22,17 +22,17 @@ def create_post(request: schemas.PostCreate, db: Session = Depends(get_db), curr
     return new_post
 
 
-@router.get('/all', status_code=status.HTTP_200_OK)
+@router.get('/all', status_code=status.HTTP_200_OK, response_model=List[schemas.PostWithDetails])
 def all_user_posts(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     return db.query(models.Post).all()
 
 
-@router.get('/mine', status_code=status.HTTP_200_OK)
+@router.get('/mine', status_code=status.HTTP_200_OK, response_model=List[schemas.PostWithDetails])
 def single_user_posts(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     return db.query(models.Post).filter(models.Post.author_id == current_user.id).all()
 
 
-@router.get('/{id}', status_code=status.HTTP_200_OK)
+@router.get('/{id}', status_code=status.HTTP_200_OK, response_model=schemas.PostWithDetails)
 def single_show(id: int, db: Session = Depends(get_db), currentUser: models.User = Depends(get_current_user)):
     post = db.query(models.Post).filter(models.Post.id == id).first()
     if not post:

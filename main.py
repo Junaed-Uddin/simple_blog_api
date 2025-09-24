@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from fastapi import FastAPI
-from routers import user, authentication, forget_password, post, comment, like
+from routers import user, authentication, forget_password, post, comment, like, refreshToken
 import models
 from database import engine
 
@@ -14,6 +14,8 @@ app.include_router(post.router)
 app.include_router(comment.router)
 app.include_router(like.router)
 app.include_router(forget_password.router)
+app.include_router(refreshToken.router)
+
 
 models.Base.metadata.create_all(engine)
 

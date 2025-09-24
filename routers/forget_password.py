@@ -11,7 +11,6 @@ from jwt import ExpiredSignatureError
 from emailSender import send_reset_email
 
 
-
 router = APIRouter(
     tags=['Password Reset']
 )
